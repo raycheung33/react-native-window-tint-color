@@ -8,12 +8,12 @@ RCT_EXPORT_MODULE()
 RCT_EXPORT_METHOD(setTintColor:(NSString *)hexString)
 {
     UIColor *color = [self colorFromHexString: hexString];
-    DispatchQueue.main.async {
+    dispatch_async(dispatch_get_main_queue(), ^{
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
         if (keyWindow) {
             [keyWindow setTintColor: color];
         }
-    }
+    });
 }
 
 - (UIColor *)colorFromHexString:(NSString *)hexString {
