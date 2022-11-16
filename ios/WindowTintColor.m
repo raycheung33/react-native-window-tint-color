@@ -4,30 +4,23 @@
 
 RCT_EXPORT_MODULE()
 
-RCT_REMAP_METHOD(setTintColor,
-                  setTintColorWithRed:(int)red withGreen:(int)green
-                  withBlue:(int)blue
-                 withResolver:(RCTPromiseResolveBlock)resolve
-                 withRejecter:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(setTintColor:(NSString *)hexString)
 {
-    if (![self isValidColor:red] || ![self isValidColor:green] || ![self isValidColor:blue]) {
-        reject(@"WindowTintColor", [NSString stringWithFormat:@"The value of %d,%d,%d` exceeds the range of 0...255", red, green, blue], nil);
-        return;
+    UIColor *color = [self colorFromHexString: hexString];
+    DispatchQueue.main.async {
+        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+        if (keyWindow) {
+            [keyWindow setTintColor: color];
+        }
     }
-        
-    UIColor *color = [UIColor colorWithRed:(CGFloat)red/255.0 green:(CGFloat)green/255.0 blue:(CGFloat)blue/255.0 alpha:1.0];
-    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-    [keyWindow setTintColor: color];
-    
-    resolve([color description]);
 }
 
-+ (BOOL)requiresMainQueueSetup {
-    return YES;
-}
-
-- (BOOL)isValidColor:(int)color {
-    return color <= 255 || color >= 0;
+- (UIColor *)colorFromHexString:(NSString *)hexString {
+    unsigned rgbValue = 0;
+    NSScanner *scanner = [NSScanner scannerWithString:hexString];
+    [scanner setScanLocation:1]; // bypass '#' character
+    [scanner scanHexInt:&rgbValue];
+    return [UIColor colorWithRed:((rgbValue & 0xFF0000) >> 16)/255.0 green:((rgbValue & 0xFF00) >> 8)/255.0 blue:(rgbValue & 0xFF)/255.0 alpha:1.0];
 }
 
 @end
